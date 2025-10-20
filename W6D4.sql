@@ -16,7 +16,14 @@ FROM dimproduct as P
 LEFT JOIN dimproductsubcategory as S
 ON P.ProductSubcategoryKey = S.ProductSubcategoryKey;
 
-# subquery --> come una inner join: vedo solo i prodotti con le sottocategorie
+# con left considero anche quei prodotti che non hanno sottocategoria;
+# se invece voglio solo osservare quelli con sottocategoria: INNER
+SELECT *
+FROM dimproduct as P
+INNER JOIN dimproductsubcategory as S
+ON P.ProductSubcategoryKey = S.ProductSubcategoryKey;
+
+# subquery (come inner)
 SELECT *
 FROM dimproduct as P
 WHERE P.ProductSubCategoryKey IN (
@@ -34,6 +41,19 @@ SELECT
   S.EnglishProductSubcategoryName
 FROM dimproduct AS P
 LEFT JOIN dimproductsubcategory AS S
+ON P.ProductSubCategoryKey = S.ProductSubCategoryKey;
+
+# - prendiamo solo alcune colonne
+SELECT
+  P.ProductKey,
+  P.ProductSubCategoryKey,
+  P.StandardCost,
+  P.ListPrice,
+  P.Status,
+  S.ProductSubCategoryKey,
+  S.EnglishProductSubcategoryName
+FROM dimproduct AS P
+INNER JOIN dimproductsubcategory AS S
 ON P.ProductSubCategoryKey = S.ProductSubCategoryKey;
 
 # 2. Esponi lʼanagrafica dei prodotti indicando per ciascun prodotto la sua sottocategoria e la sua categoria 
@@ -64,6 +84,31 @@ ON P.ProductSubcategoryKey = S.ProductSubcategoryKey
 LEFT JOIN dimproductcategory AS C
 ON S.ProductCategoryKey = C.ProductCategoryKey;
 
+SELECT
+P.*, S.*, C.*
+FROM dimproduct AS P
+INNER JOIN dimproductsubcategory AS S
+ ON P.ProductSubCategoryKey = S.ProductSubCategoryKey
+INNER JOIN dimproductcategory AS C
+ ON S.ProductCategoryKey = C.ProductCategoryKey;
+
+# facciamo lo stesso selezionando solo le colonne di interesse
+SELECT
+P.ProductKey,
+P.ProductSubcategoryKey,
+P.StandardCost,
+P.ListPrice,
+P.Status,
+S.ProductSubcategoryKey,
+S.ProductCategoryKey,
+C.ProductCategoryKey,
+C.FrenchProductCategoryName
+FROM dimproduct AS P
+INNER JOIN dimproductsubcategory AS S
+ON P.ProductSubcategoryKey = S.ProductSubcategoryKey
+INNER JOIN dimproductcategory AS C
+ON S.ProductCategoryKey = C.ProductCategoryKey;
+
 # 3. Esponi lʼelenco dei soli prodotti venduti (DimProduct, FactResellerSales)
 SELECT * FROM factresellersales;
 # adesso effettuare una inner join
@@ -73,7 +118,7 @@ SELECT
   P.ListPrice
 FROM dimproduct AS P
 INNER JOIN factresellersales AS F
-  ON F.ProductKey = P.ProductKey;
+ON F.ProductKey = P.ProductKey;
 
 # facciamo subquery: qui si rispetta la inner join
 SELECT *
@@ -156,11 +201,11 @@ F.ProductKey,
 F.OrderQuantity,
 F.UnitPrice
 FROM factresellersales AS F
-INNER JOIN dimproduct as P
+LEFT JOIN dimproduct as P
 ON F.ProductKey = P.ProductKey
-INNER JOIN dimproductsubcategory AS D
+LEFT JOIN dimproductsubcategory AS D
 ON P.ProductSubCategoryKey = D.ProductSubCategoryKey
-INNER JOIN dimproductcategory as C
+LEFT JOIN dimproductcategory as C
 ON D.ProductCategoryKey = C.ProductCategoryKey;
  
 # 2. EPLORA DIMRESELLER
@@ -177,7 +222,7 @@ R.ProductLine,
 G.City,
 G.StateProvinceName
 FROM dimreseller AS R
-LEFT JOIN dimgeography AS G
+INNER JOIN dimgeography AS G
 ON G.GeographyKey = R.GeographyKey;
 
 SELECT *
@@ -202,9 +247,9 @@ C.EnglishProductCategoryName,
 R.ResellerName,
 G.City
 FROM factresellersales AS F
-INNER JOIN dimproduct as P
+LEFT JOIN dimproduct as P
 ON F.ProductKey = P.ProductKey
-INNER JOIN dimproductsubcategory AS D
+LEFT JOIN dimproductsubcategory AS D
 ON P.ProductSubCategoryKey = D.ProductSubCategoryKey
 INNER JOIN dimproductcategory as C
 ON D.ProductCategoryKey = C.ProductCategoryKey
